@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2022",
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "outDir": "dist"
+  },
+  "include": ["src/scripts/*"],
+  "exclude": ["dist"]
+}
