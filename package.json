@@ -1,0 +1,25 @@
+{
+  "name": "productivity-extension",
+  "version": "1.0.0",
+  "description": "An extension that improves my personal productivity on the web\r ## Features\r ### YouTube\r - Stops me from watching YouTube after a certain amount of time\r - Allows me to go beyond the 2x speed cap set by the YouTube editor",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KenjiPcx/Productivity-Extension.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KenjiPcx/Productivity-Extension/issues"
+  },
+  "homepage": "https://github.com/KenjiPcx/Productivity-Extension#readme",
+  "devDependencies": {
+    "@types/chrome": "^0.0.207",
+    "@types/node": "^18.11.18",
+    "typescript": "^4.9.4"
+  }
+}

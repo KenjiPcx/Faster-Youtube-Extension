@@ -1,34 +1,88 @@
-// Type: Service Worker
-// Description: Service Worker for the Productivity Extension
-
-// Features
-// - Needs an on off interface
-// - Data structure to store the amount of time spent on youtube in one session
-// - Check if page is youtube
-// - Hide everything on my screen when timer is up
-// - Cooldown feature when I am not watching youtube
-//     - Cooloff feature to reset the timer
-// - Integration with my Todoist to make sure I am not supposed to watch YouTube at this time
-// - Need to integrate some failure condition to make sure I don't turn it off
-
-let startTime;
-
+// Default Settings
 chrome.runtime.onInstalled.addListener(() => {
   chrome.action.setBadgeText({
     text: "OFF",
   });
 });
 
+// Main Program
+let startTime: number;
+let intervalId: NodeJS.Timeout;
+let elapsedTime: number;
+let timeSpentOnYouTube = 0;
 const YOUTUBE_URL = "https://www.youtube.com/";
+const UPDATE_INTERVAL = 2 * 1000;
+let prevIsYouTube: boolean = false;
+
+setInterval(() => {
+  console.log(timeSpentOnYouTube);
+}, 1000);
+chrome.action.onClicked.addListener(async (tab) => {
+  console.log("Clicked action");
+});
+
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  console.log("Active event");
+  console.log(activeInfo);
+
+  // If previous timer already exists
+  if (intervalId) {
+    if (prevIsYouTube) {
+      timeSpentOnYouTube += Date.now() - startTime;
+    } else if (timeSpentOnYouTube > 0) {
+      timeSpentOnYouTube -= Date.now() - startTime;
+      if (timeSpentOnYouTube < 0) {
+        timeSpentOnYouTube = 0;
+      }
+    }
+    clearInterval(intervalId);
+  }
+
+  // Set up a new timer for the current tab
+  chrome.tabs.get(activeInfo.tabId, (tab) => {
+    prevIsYouTube = tab.url!.startsWith(YOUTUBE_URL);
+
+    startTime = Date.now();
+    intervalId = setInterval(() => {
+      elapsedTime = Date.now() - startTime;
+      if (tab.url?.startsWith(YOUTUBE_URL)) {
+        timeSpentOnYouTube += elapsedTime;
+      } else {
+        timeSpentOnYouTube -= elapsedTime;
+        if (timeSpentOnYouTube < 0) {
+          timeSpentOnYouTube = 0;
+        }
+      }
+      startTime = Date.now();
+    }, UPDATE_INTERVAL);
+  });
+});
+
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (tab.url && tab.url.startsWith(YOUTUBE_URL)) {
-    chrome.action.setBadgeText({
-      text: "ON",
-    });
-  } else {
-    chrome.action.setBadgeText({
-      text: "OFF",
-    });
+  console.log("Update event");
+
+  if (intervalId) {
+    if (prevIsYouTube) {
+      timeSpentOnYouTube += Date.now() - startTime;
+    } else if (timeSpentOnYouTube > 0) {
+      timeSpentOnYouTube -= Date.now() - startTime;
+      if (timeSpentOnYouTube < 0) {
+        timeSpentOnYouTube = 0;
+      }
+    }
   }
 });
 
+chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
+  if (intervalId) {
+    if (prevIsYouTube) {
+      timeSpentOnYouTube += Date.now() - startTime;
+    } else if (timeSpentOnYouTube > 0) {
+      timeSpentOnYouTube -= Date.now() - startTime;
+      if (timeSpentOnYouTube < 0) {
+        timeSpentOnYouTube = 0;
+      }
+    }
+    clearInterval(intervalId);
+  }
+});

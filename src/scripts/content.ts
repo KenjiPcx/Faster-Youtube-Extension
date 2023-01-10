@@ -1,1 +1,1 @@
-// Use focus mode example but remove everything from my screen 
+// Use focus mode example to remove everything from my screen
