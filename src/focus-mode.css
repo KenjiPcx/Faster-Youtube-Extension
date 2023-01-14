@@ -1,0 +1,28 @@
+*::-webkit-scrollbar {
+  display: none;
+}
+
+#below {
+  display: none;
+}
+
+#secondary {
+  display: none;
+}
+
+#player-theater-container {
+  margin-top: min(2.5vmax, 10rem);
+  margin-bottom: min(2.5vmax, 10rem);
+}
+
+.ytp-endscreen-content {
+  display: none;
+}
+
+.ytp-autonav-endscreen-upnext-container {
+  display: none;
+}
+
+.ytp-autonav-endscreen-button-container {
+  display: none;
+}

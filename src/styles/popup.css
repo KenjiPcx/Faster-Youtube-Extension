@@ -1,0 +1,8 @@
+body {
+  max-width: fit-content;
+  background-color: gray;
+}
+
+.card {
+  border-radius: 0 !important;
+}

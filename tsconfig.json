@@ -4,7 +4,7 @@
     "target": "ES2022",
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "outDir": "src/dist"
+    "outDir": "src"
   },
   "include": ["src/scripts/*"],
   "exclude": ["dist"]
