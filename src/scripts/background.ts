@@ -159,10 +159,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           target: { tabId: currentTab.id! },
         });
         await chrome.storage.local.set({ focusMode: true });
-        console.log("Set to true");
-        await chrome.storage.local.get(["focusMode"], (res) =>
-          console.log(res)
-        );
       }
 
       if (request.type === "disableFocusMode") {
@@ -171,10 +167,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           target: { tabId: currentTab.id! },
         });
         await chrome.storage.local.set({ focusMode: false });
-        console.log("SET TO FALSE");
-        await chrome.storage.local.get(["focusMode"], (res) =>
-          console.log(res)
-        );
       }
     }
   });
