@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Controls and ui
     let focusModeSwitch = document.getElementById("focusModeSwitch");
     let energyBarSwitch = document.getElementById("energyBarSwitch");
+    let energyLevelBar = document.getElementById("energyBar");
     let fasterVideosSwitch = document.getElementById("fasterVideosSwitch");
     let playbackSpeedMultiplier = document.getElementById(
       "playbackSpeedMultiplier"
@@ -27,10 +28,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Checks whether energy bar was enabled before and sets it if it was
-    chrome.storage.local.get(["fasterVideos"], function (result) {
+    chrome.storage.local.get(["energyBar"], function (result) {
       let energyBar = result.energyBar || false;
       if (energyBar) {
         energyBarSwitch?.setAttribute("checked", "");
+      } else {
+        energyLevelBar!.style.display = "none";
       }
     });
 
@@ -53,9 +56,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Sends an event to background.js to enable/disable focus mode
 document
-  .getElementById("focusModeSwitch")!
-  .addEventListener("change", (e: any) => {
+  .getElementById("focusModeSwitch")
+  ?.addEventListener("change", (e: any) => {
     let message = e.target.checked ? "enableFocusMode" : "disableFocusMode";
     chrome.runtime.sendMessage({ type: message });
   });
 
+// Sends an event to background.js to enable/disable faster videos
+document
+  .getElementById("energyBarSwitch")
+  ?.addEventListener("change", async (e: any) => {
+    let energyBarEnabled = e.target.checked;
+    let energyLevelBar = document.getElementById("energyBar");
+    if (energyBarEnabled) {
+      energyLevelBar!.style.display = "block";
+    } else {
+      energyLevelBar!.style.display = "none";
+    }
+    await chrome.storage.local.set({ energyBar: energyBarEnabled });
+  });
+
+// Sends an event to background.js to enable/disable faster videos
+document
+  .getElementById("fasterVideosSwitch")
+  ?.addEventListener("change", async (e: any) => {
+    let fasterVideosEnabled = e.target.checked;
+    let playbackSpeedMultiplier = document.getElementById(
+      "playbackSpeedMultiplier"
+    );
+    if (fasterVideosEnabled) {
+      playbackSpeedMultiplier!.style.display = "block";
+    } else {
+      playbackSpeedMultiplier!.style.display = "none";
+    }
+    await chrome.storage.local.set({ fasterVideos: fasterVideosEnabled });
+  });

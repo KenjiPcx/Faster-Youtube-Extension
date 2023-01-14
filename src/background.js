@@ -149,5 +149,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 await chrome.storage.local.set({ focusMode: false });
             }
         }
+        // Enable/Disable energy bar
+        if (request.type === "enableEnergyBar") {
+            await chrome.storage.local.set({ energyBar: true });
+        }
+        if (request.type === "disableEnergyBar") {
+            await chrome.storage.local.set({ energyBar: false });
+        }
+        // Enable/Disable faster videos
+        if (currentTab.url?.startsWith(url)) {
+            if (request.type === "enableFasterVideos") {
+                await chrome.storage.local.set({ fasterVideos: true });
+            }
+            if (request.type === "disableFasterVideos") {
+                await chrome.storage.local.set({ fasterVideos: false });
+            }
+        }
     });
 });
