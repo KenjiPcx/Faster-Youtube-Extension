@@ -148,6 +148,7 @@ const url = "https://www.youtube.com/watch?";
 
 // Receives the message calls to handle actions
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log(request.type);
   chrome.tabs.query({ active: true }, async (tabs) => {
     let currentTab = tabs[0] as chrome.tabs.Tab;
 
@@ -175,16 +176,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     if (request.type === "disableEnergyBar") {
       await chrome.storage.local.set({ energyBar: false });
-    }
-
-    // Enable/Disable faster videos
-    if (currentTab.url?.startsWith(url)) {
-      if (request.type === "enableFasterVideos") {
-        await chrome.storage.local.set({ fasterVideos: true });
-      }
-      if (request.type === "disableFasterVideos") {
-        await chrome.storage.local.set({ fasterVideos: false });
-      }
     }
   });
 });

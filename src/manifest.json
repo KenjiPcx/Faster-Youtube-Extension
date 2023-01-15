@@ -18,7 +18,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://youtube.com/*", "https://cdn.jsdelivr.net/npm/*"],
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://cdn.jsdelivr.net/npm/*",
+        "https://developer.chrome.com/docs/extensions/*",
+        "https://developer.chrome.com/docs/webstore/*"
+      ],
       "js": ["content.js"]
     }
   ],
