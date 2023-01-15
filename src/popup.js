@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 let focusMode = result.focusMode || false;
                 if (focusMode) {
                     focusModeSwitch?.setAttribute("checked", "");
+                    chrome.runtime.sendMessage({ type: "enableFocusMode" });
                 }
             });
         }
@@ -49,59 +50,77 @@ document.addEventListener("DOMContentLoaded", () => {
             playbackSpeedMultiplier.style.display = "none";
         }
     });
+    // Initialize commands
+    initFocusModeSwitch();
+    initEnergyBarSwitch();
+    initFasterVideosSwitch();
+    initFasterVideos();
 });
-// Sends an event to background.js to enable/disable focus mode
-document
-    .getElementById("focusModeSwitch")
-    ?.addEventListener("change", (e) => {
-    let message = e.target.checked ? "enableFocusMode" : "disableFocusMode";
-    chrome.runtime.sendMessage({ type: message });
-});
-// Sends an event to background.js to enable/disable faster videos
-document
-    .getElementById("energyBarSwitch")
-    ?.addEventListener("change", async (e) => {
-    let energyBarEnabled = e.target.checked;
-    let energyLevelBar = document.getElementById("energyBar");
-    if (energyBarEnabled) {
-        energyLevelBar.style.display = "block";
-    }
-    else {
-        energyLevelBar.style.display = "none";
-    }
-    await chrome.storage.local.set({ energyBar: energyBarEnabled });
-});
-// Sends an event to background.js to enable/disable faster videos
-document
-    .getElementById("fasterVideosSwitch")
-    ?.addEventListener("change", async (e) => {
-    let fasterVideosEnabled = e.target.checked;
-    let playbackSpeedMultiplier = document.getElementById("playbackSpeedMultiplier");
-    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
-        let id = tabs[0].id;
-        if (fasterVideosEnabled) {
-            // Show the dropdown
-            playbackSpeedMultiplier.style.display = "block";
-            // Update the speed to the dropdown option and save original speed
-            let playbackSpeed = parseFloat(playbackSpeedMultiplier.value);
-            chrome.tabs.sendMessage(id, { type: "saveOriginalSpeed" });
-            await setSpeed(playbackSpeed);
+const initFocusModeSwitch = () => {
+    // Sends an event to background.js to enable/disable focus mode
+    document
+        .getElementById("focusModeSwitch")
+        ?.addEventListener("change", (e) => {
+        let message = e.target.checked ? "enableFocusMode" : "disableFocusMode";
+        chrome.runtime.sendMessage({ type: message });
+    });
+};
+const initEnergyBarSwitch = () => {
+    // Sends an event to background.js to enable/disable energy bar
+    document
+        .getElementById("energyBarSwitch")
+        ?.addEventListener("change", async (e) => {
+        let energyBarEnabled = e.target.checked;
+        let energyLevelBar = document.getElementById("energyBar");
+        if (energyBarEnabled) {
+            energyLevelBar.style.display = "block";
         }
         else {
-            // Hide the dropdown and reset the speed back to original
-            playbackSpeedMultiplier.style.display = "none";
-            chrome.tabs.sendMessage(id, { type: "setOriginalSpeed" });
+            energyLevelBar.style.display = "none";
         }
-        await chrome.storage.local.set({ fasterVideos: fasterVideosEnabled });
+        await chrome.storage.local.set({ energyBar: energyBarEnabled });
     });
-});
+};
+const initFasterVideosSwitch = () => {
+    // Sends an event to background.js to enable/disable faster videos
+    document
+        .getElementById("fasterVideosSwitch")
+        ?.addEventListener("change", async (e) => {
+        let fasterVideosEnabled = e.target.checked;
+        let playbackSpeedMultiplierDropdown = document.getElementById("playbackSpeedMultiplierDropdown");
+        let playbackSpeedMultiplier = document.getElementById("playbackSpeedMultiplier");
+        console.log(playbackSpeedMultiplier);
+        chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+            let id = tabs[0].id;
+            if (fasterVideosEnabled) {
+                // Show the dropdown
+                playbackSpeedMultiplierDropdown.style.display = "block";
+                // Update the speed to the dropdown option and save original speed
+                let playbackSpeed = parseFloat(playbackSpeedMultiplier.value);
+                chrome.tabs.sendMessage(id, { type: "saveOriginalSpeed" });
+                console.log(playbackSpeedMultiplier.value);
+                console.log(playbackSpeed);
+                await setSpeed(playbackSpeed);
+            }
+            else {
+                // Hide the dropdown and reset the speed back to original
+                playbackSpeedMultiplierDropdown.style.display = "none";
+                chrome.tabs.sendMessage(id, { type: "setOriginalSpeed" });
+            }
+            await chrome.storage.local.set({ fasterVideos: fasterVideosEnabled });
+        });
+    });
+};
 // Send an event to background.js to set the custom speed
-document
-    .getElementById("playbackSpeedMultiplier")
-    ?.addEventListener("change", async (e) => {
-    let playbackSpeed = parseFloat(e.target.value);
-    await setSpeed(playbackSpeed);
-});
+const initFasterVideos = () => {
+    document
+        .getElementById("playbackSpeedMultiplier")
+        ?.addEventListener("change", async (e) => {
+        let playbackSpeed = parseFloat(e.target.value);
+        console.log("Playbackspeed", playbackSpeed);
+        await setSpeed(playbackSpeed);
+    });
+};
 // Function to set playback speed
 const setSpeed = async (playbackSpeed) => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -111,6 +130,5 @@ const setSpeed = async (playbackSpeed) => {
             playbackSpeed: playbackSpeed,
         });
     });
-    console.log(`Sent set speed message with speed ${playbackSpeed}`);
     await chrome.storage.local.set({ playbackSpeed: playbackSpeed });
 };

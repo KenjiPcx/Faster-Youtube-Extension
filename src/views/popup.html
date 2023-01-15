@@ -27,30 +27,44 @@
                 <input class="form-check-input" type="checkbox" role="switch" id="energyBarSwitch">
                 <label class="form-check-label" for="energyBarSwitch">Enable Energe Bar</label>
             </div>
-            <div class="progress" role="progressbar" id="energyBar">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 50%">
-                </div>
-            </div>
 
             <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" role="switch" id="fasterVideosSwitch">
                 <label class="form-check-label" for="fasterVideosSwitch">Enable Faster Videos</label>
             </div>
-            <select class="form-select form-select-sm" id="playbackSpeedMultiplier">
-                <option value="1" selected>1x</option>
-                <option value="1.25" selected>1.25x</option>
-                <option value="1.5" selected>1.5x</option>
-                <option value="1.75" selected>1.75x</option>
-                <option value="2" selected>2x</option>
-                <option value="2.25">2.25x</option>
-                <option value="2.5">2.5x</option>
-                <option value="2.75">2.75x</option>
-                <option value="3">3x</option>
-                <option value="3.25">3.25x</option>
-                <option value="3.5">3.5x</option>
-                <option value="3.75">3.75x</option>
-                <option value="4">4x</option>
-            </select>
+        </div>
+
+        <div class="card text-bg-dark" id="energyBar">
+            <div class="card-body">
+                <h5 class="card-title">YouTube Energy Bar</h5>
+                <p class="card-text">Watching videos deplete this bar. Doing anything else refills this bar</p>
+                <div class="progress" role="progressbar">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 50%">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card text-bg-dark" id="playbackSpeedMultiplierDropdown">
+            <div class="card-body">
+                <h5 class="card-title">Faster YouTube Videos</h5>
+                <p class="card-text">Go beyond 2x speed and learn faster.</p>
+                <select class="form-select form-select-sm" id="playbackSpeedMultiplier">
+                    <option value="1" selected>1x</option>
+                    <option value="1.25">1.25x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="1.75">1.75x</option>
+                    <option value="2">2x</option>
+                    <option value="2.25">2.25x</option>
+                    <option value="2.5">2.5x</option>
+                    <option value="2.75">2.75x</option>
+                    <option value="3">3x</option>
+                    <option value="3.25">3.25x</option>
+                    <option value="3.5">3.5x</option>
+                    <option value="3.75">3.75x</option>
+                    <option value="4">4x</option>
+                </select>
+            </div>
         </div>
     </div>
 </body>
