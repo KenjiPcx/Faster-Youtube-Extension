@@ -3,8 +3,10 @@ let startTime = new Date().getTime();
 let energyLevels = 0;
 let url = "https://www.youtube.com/watch?";
 let limit = 300000;
+let portConnected = false;
 
 chrome.runtime.onConnect.addListener((port) => {
+  portConnected = true;
   port.onMessage.addListener((msg) => {
     if (msg.type === "enableFocusMode" || msg.type === "disableFocusMode")
       chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
@@ -38,7 +40,7 @@ chrome.runtime.onConnect.addListener((port) => {
 
       // Handle time logging
       startTime = new Date().getTime();
-      initEnergyLevelInterval(port);
+      initEnergyLevelInterval();
     }
 
     if (msg.type === "stopEnergyMonitor") {
@@ -52,61 +54,71 @@ chrome.runtime.onConnect.addListener((port) => {
     }
   });
 
+  port.onDisconnect.addListener((port) => {
+    portConnected = false;
+    if (interval) {
+      clearInterval(interval);
+    }
+    initEnergyLevelInterval();
+  });
+
   chrome.tabs.onReplaced.addListener((addedTabId, removedTabId) => {
     if (interval) {
       clearInterval(interval);
-      console.log("REMOVED");
     }
+    initEnergyLevelInterval();
   });
 
   chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (interval) {
       clearInterval(interval);
-      console.log("REMOVED");
     }
+    initEnergyLevelInterval();
   });
 
   chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
     if (interval) {
       clearInterval(interval);
-      console.log("REMOVED");
     }
+    initEnergyLevelInterval();
   });
 
   chrome.tabs.onActivated.addListener((activeInfo) => {
     if (interval) {
       clearInterval(interval);
-      console.log("REMOVED");
     }
+    initEnergyLevelInterval();
   });
-});
 
-const initEnergyLevelInterval = (port: chrome.runtime.Port) => {
-  interval = setInterval(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.get(tabs[0].id!, async (tab) => {
-        let elapsedTime = new Date().getTime() - startTime;
-        if (tab.url?.startsWith(url)) {
-          if (energyLevels > limit) {
-            energyLevels = limit;
-            await chrome.scripting.executeScript({
-              files: ["timeout.js"],
-              target: { tabId: tabs[0].id! },
-            });
+  const initEnergyLevelInterval = () => {
+    interval = setInterval(() => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        chrome.tabs.get(tabs[0].id!, async (tab) => {
+          let elapsedTime = new Date().getTime() - startTime;
+          if (tab.url?.startsWith(url)) {
+            if (energyLevels > limit) {
+              energyLevels = limit;
+              await chrome.scripting.executeScript({
+                files: ["timeout.js"],
+                target: { tabId: tabs[0].id! },
+              });
+            }
+            energyLevels += elapsedTime;
+          } else {
+            energyLevels -= elapsedTime;
+            if (energyLevels < 0) energyLevels = 0;
           }
-          energyLevels += elapsedTime;
-        } else {
-          energyLevels -= elapsedTime;
-          if (energyLevels < 0) energyLevels = 0;
-        }
-        startTime = new Date().getTime();
-        port.postMessage({
-          energyLevels: (1 - energyLevels / limit) * 100,
+          startTime = new Date().getTime();
+          if (portConnected) {
+            port.postMessage({
+              energyLevels: (1 - energyLevels / limit) * 100,
+            });
+            console.log(
+              `Posted time to browser ${(1 - energyLevels / limit) * 100}`
+            );
+          }
         });
-        console.log(
-          `Posted time to browser ${(1 - energyLevels / limit) * 100}`
-        );
       });
-    });
-  }, 5000);
-};
+    }, 5000);
+  };
+});

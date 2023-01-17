@@ -34,6 +34,10 @@ document.addEventListener("DOMContentLoaded", () => {
       let energyBar = result.energyBar || false;
       if (energyBar) {
         energyBarSwitch?.setAttribute("checked", "");
+        port = chrome.runtime.connect();
+        port.postMessage({ type: "startEnergyMonitor" });
+        console.log("Sent a startEnergyMonitor evnet");
+        port.onMessage.addListener(energyBarListener);
       } else {
         energyLevelBar!.style.display = "none";
       }
@@ -74,25 +78,26 @@ const initFocusModeSwitch = () => {
 
 const initEnergyBarSwitch = () => {
   // Sends an event to background.js to enable/disable energy bar
-  document
-    .getElementById("energyBarSwitch")
-    ?.addEventListener("change", async (e: any) => {
-      let energyBarEnabled = e.target.checked;
-      let energyLevelBar = document.getElementById("energyBar");
+  let energyLevelBar = document.getElementById("energyBar");
+  let energyBarSwitch = document.getElementById("energyBarSwitch");
 
-      if (energyBarEnabled) {
-        energyLevelBar!.style.display = "block";
-        port.postMessage({ type: "startEnergyMonitor" });
-        console.log("Sent a startEnergyMonitor evnet");
-        port.onMessage.addListener(energyBarListener);
-      } else {
-        energyLevelBar!.style.display = "none";
-        port.onMessage.removeListener(energyBarListener);
-        console.log("Sent a stopEnergyMonitor event");
-        port.postMessage({ type: "stopEnergyMonitor" });
-      }
-      await chrome.storage.local.set({ energyBar: energyBarEnabled });
-    });
+  // Setup event listener
+  energyBarSwitch?.addEventListener("change", async (e: any) => {
+    let energyBarEnabled = e.target.checked;
+
+    if (energyBarEnabled) {
+      energyLevelBar!.style.display = "block";
+      port.postMessage({ type: "startEnergyMonitor" });
+      console.log("Sent a startEnergyMonitor evnet");
+      port.onMessage.addListener(energyBarListener);
+    } else {
+      energyLevelBar!.style.display = "none";
+      port.onMessage.removeListener(energyBarListener);
+      console.log("Sent a stopEnergyMonitor event");
+      port.postMessage({ type: "stopEnergyMonitor" });
+    }
+    await chrome.storage.local.set({ energyBar: energyBarEnabled });
+  });
 };
 
 const energyBarListener = (message: any, port: chrome.runtime.Port) => {
@@ -157,23 +162,3 @@ const setSpeed = async (playbackSpeed: number) => {
   });
   await chrome.storage.local.set({ playbackSpeed: playbackSpeed });
 };
-
-chrome.tabs.onReplaced.addListener((addedTabId, removedTabId) => {
-  console.log("REplaced");
-  port = chrome.runtime.connect();
-});
-
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  console.log("updated");
-  port = chrome.runtime.connect();
-});
-
-chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
-  console.log("Removed");
-  port = chrome.runtime.connect();
-});
-
-chrome.tabs.onActivated.addListener((activeInfo) => {
-  console.log("Activated");
-  port = chrome.runtime.connect();
-});
