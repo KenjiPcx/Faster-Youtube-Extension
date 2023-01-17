@@ -1,13 +1,10 @@
 let youtube_url = "https://www.youtube.com/watch?";
-let port = chrome.runtime.connect();
 // Whenever the popup is loaded
 document.addEventListener("DOMContentLoaded", () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         let currentTab = tabs[0];
         // Controls and ui
         let focusModeSwitch = document.getElementById("focusModeSwitch");
-        let energyBarSwitch = document.getElementById("energyBarSwitch");
-        let energyLevelBar = document.getElementById("energyBar");
         let fasterVideosSwitch = document.getElementById("fasterVideosSwitch");
         let playbackSpeedMultiplier = document.getElementById("playbackSpeedMultiplier");
         // Checks whether focus mode was enabled previously and
@@ -17,27 +14,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 let focusMode = result.focusMode || false;
                 if (focusMode) {
                     focusModeSwitch?.setAttribute("checked", "");
-                    port.postMessage({ type: "enableFocusMode" });
+                    chrome.runtime.sendMessage({ type: "enableFocusMode" });
                 }
             });
         }
         else {
             focusModeSwitch?.setAttribute("disabled", "");
         }
-        // Checks whether energy bar was enabled before and sets it if it was
-        chrome.storage.local.get(["energyBar"], function (result) {
-            let energyBar = result.energyBar || false;
-            if (energyBar) {
-                energyBarSwitch?.setAttribute("checked", "");
-                port = chrome.runtime.connect();
-                port.postMessage({ type: "startEnergyMonitor" });
-                console.log("Sent a startEnergyMonitor evnet");
-                port.onMessage.addListener(energyBarListener);
-            }
-            else {
-                energyLevelBar.style.display = "none";
-            }
-        });
         // Checks whether faster mode was enabled before and sets it if it was
         if (currentTab.url?.startsWith(youtube_url)) {
             chrome.storage.local.get(["fasterVideos"], function (result) {
@@ -57,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     // Initialize commands
     initFocusModeSwitch();
-    initEnergyBarSwitch();
     initFasterVideosSwitch();
     initFasterVideos();
 });
@@ -67,37 +49,8 @@ const initFocusModeSwitch = () => {
         .getElementById("focusModeSwitch")
         ?.addEventListener("change", (e) => {
         let message = e.target.checked ? "enableFocusMode" : "disableFocusMode";
-        port.postMessage({ type: message });
+        chrome.runtime.sendMessage({ type: message });
     });
-};
-const initEnergyBarSwitch = () => {
-    // Sends an event to background.js to enable/disable energy bar
-    let energyLevelBar = document.getElementById("energyBar");
-    let energyBarSwitch = document.getElementById("energyBarSwitch");
-    // Setup event listener
-    energyBarSwitch?.addEventListener("change", async (e) => {
-        let energyBarEnabled = e.target.checked;
-        if (energyBarEnabled) {
-            energyLevelBar.style.display = "block";
-            port.postMessage({ type: "startEnergyMonitor" });
-            console.log("Sent a startEnergyMonitor evnet");
-            port.onMessage.addListener(energyBarListener);
-        }
-        else {
-            energyLevelBar.style.display = "none";
-            port.onMessage.removeListener(energyBarListener);
-            console.log("Sent a stopEnergyMonitor event");
-            port.postMessage({ type: "stopEnergyMonitor" });
-        }
-        await chrome.storage.local.set({ energyBar: energyBarEnabled });
-    });
-};
-const energyBarListener = (message, port) => {
-    console.log(message.energyLevels);
-    let energyLevels = document.getElementById("energyLevel");
-    if (energyLevels) {
-        energyLevels.style.width = `${message.energyLevels}%`;
-    }
 };
 const initFasterVideosSwitch = () => {
     // Sends an event to background.js to enable/disable faster videos
