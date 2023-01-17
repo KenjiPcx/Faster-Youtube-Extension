@@ -1,8 +1,6 @@
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
-  console.log(request.type);
   let video = document.querySelector("video");
   if (request.type === "setSpeed") {
-    console.log(request.playbackSpeed);
     video!.playbackRate = request.playbackSpeed as number;
     await chrome.storage.local.set({
       playbackSpeed: request.playbackSpeed,
