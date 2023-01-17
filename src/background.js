@@ -6,16 +6,59 @@ chrome.runtime.onMessage.addListener((msg) => {
         if (currentTab.url?.startsWith(url)) {
             if (msg.type === "enableFocusMode") {
                 await chrome.scripting.insertCSS({
-                    files: ["focus-mode.css"],
+                    css: `*::-webkit-scrollbar {
+                  display: none;
+                }
+                #below {
+                  display: none;
+                }
+                #secondary {
+                  display: none;
+                }
+                #player-theater-container {
+                  margin-top: min(2.5vmax, 10rem);
+                  margin-bottom: min(2.5vmax, 10rem);
+                }
+                .ytp-endscreen-content {
+                  display: none;
+                }
+                .ytp-autonav-endscreen-upnext-container {
+                  display: none;
+                }
+                .ytp-autonav-endscreen-button-container {
+                  display: none;
+                }`,
                     target: { tabId: currentTab.id },
                 });
                 await chrome.storage.local.set({ focusMode: true });
             }
             if (msg.type === "disableFocusMode") {
                 await chrome.scripting.removeCSS({
-                    files: ["focus-mode.css"],
+                    css: `*::-webkit-scrollbar {
+                  display: none;
+                }
+                #below {
+                  display: none;
+                }
+                #secondary {
+                  display: none;
+                }
+                #player-theater-container {
+                  margin-top: min(2.5vmax, 10rem);
+                  margin-bottom: min(2.5vmax, 10rem);
+                }
+                .ytp-endscreen-content {
+                  display: none;
+                }
+                .ytp-autonav-endscreen-upnext-container {
+                  display: none;
+                }
+                .ytp-autonav-endscreen-button-container {
+                  display: none;
+                }`,
                     target: { tabId: currentTab.id },
                 });
+                console.log("REMoved");
                 await chrome.storage.local.set({ focusMode: false });
             }
         }

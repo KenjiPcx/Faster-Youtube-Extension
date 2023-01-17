@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Controls and ui
         let focusModeSwitch = document.getElementById("focusModeSwitch");
         let fasterVideosSwitch = document.getElementById("fasterVideosSwitch");
-        let playbackSpeedMultiplier = document.getElementById("playbackSpeedMultiplier");
+        let playbackSpeedMultiplierCard = document.getElementById("playbackSpeedMultiplierCard");
         // Checks whether focus mode was enabled previously and
         // set the slider if it was set
         if (currentTab.url?.startsWith(youtube_url)) {
@@ -29,13 +29,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     fasterVideosSwitch?.setAttribute("checked", "");
                 }
                 else {
-                    playbackSpeedMultiplier.style.display = "none";
+                    playbackSpeedMultiplierCard.style.display = "none";
                 }
             });
         }
         else {
             fasterVideosSwitch?.setAttribute("disabled", "");
-            playbackSpeedMultiplier.style.display = "none";
+            playbackSpeedMultiplierCard.style.display = "none";
         }
     });
     // Initialize commands
@@ -58,21 +58,21 @@ const initFasterVideosSwitch = () => {
         .getElementById("fasterVideosSwitch")
         ?.addEventListener("change", async (e) => {
         let fasterVideosEnabled = e.target.checked;
-        let playbackSpeedMultiplierDropdown = document.getElementById("playbackSpeedMultiplierDropdown");
+        let playbackSpeedMultiplierCard = document.getElementById("playbackSpeedMultiplierCard");
         let playbackSpeedMultiplier = document.getElementById("playbackSpeedMultiplier");
         chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
             let id = tabs[0].id;
             if (fasterVideosEnabled) {
-                // Show the dropdown
-                playbackSpeedMultiplierDropdown.style.display = "block";
-                // Update the speed to the dropdown option and save original speed
+                // Show the card
+                playbackSpeedMultiplierCard.style.display = "block";
+                // Update the speed to the card option and save original speed
                 let playbackSpeed = parseFloat(playbackSpeedMultiplier.value);
                 chrome.tabs.sendMessage(id, { type: "saveOriginalSpeed" });
                 await setSpeed(playbackSpeed);
             }
             else {
-                // Hide the dropdown and reset the speed back to original
-                playbackSpeedMultiplierDropdown.style.display = "none";
+                // Hide the card and reset the speed back to original
+                playbackSpeedMultiplierCard.style.display = "none";
                 chrome.tabs.sendMessage(id, { type: "setOriginalSpeed" });
             }
             await chrome.storage.local.set({ fasterVideos: fasterVideosEnabled });
