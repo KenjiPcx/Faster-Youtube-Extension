@@ -1,4 +1,5 @@
 let youtube_url = "https://www.youtube.com/watch?";
+let port = chrome.runtime.connect();
 // Whenever the popup is loaded
 document.addEventListener("DOMContentLoaded", () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -16,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 let focusMode = result.focusMode || false;
                 if (focusMode) {
                     focusModeSwitch?.setAttribute("checked", "");
-                    chrome.runtime.sendMessage({ type: "enableFocusMode" });
+                    port.postMessage({ type: "enableFocusMode" });
                 }
             });
         }
@@ -62,7 +63,7 @@ const initFocusModeSwitch = () => {
         .getElementById("focusModeSwitch")
         ?.addEventListener("change", (e) => {
         let message = e.target.checked ? "enableFocusMode" : "disableFocusMode";
-        chrome.runtime.sendMessage({ type: message });
+        port.postMessage({ type: message });
     });
 };
 const initEnergyBarSwitch = () => {
@@ -74,12 +75,25 @@ const initEnergyBarSwitch = () => {
         let energyLevelBar = document.getElementById("energyBar");
         if (energyBarEnabled) {
             energyLevelBar.style.display = "block";
+            port.postMessage({ type: "startEnergyMonitor" });
+            console.log("Sent a startEnergyMonitor evnet");
+            port.onMessage.addListener(energyBarListener);
         }
         else {
             energyLevelBar.style.display = "none";
+            port.onMessage.removeListener(energyBarListener);
+            console.log("Sent a stopEnergyMonitor event");
+            port.postMessage({ type: "stopEnergyMonitor" });
         }
         await chrome.storage.local.set({ energyBar: energyBarEnabled });
     });
+};
+const energyBarListener = (message, port) => {
+    console.log(message.energyLevels);
+    let energyLevels = document.getElementById("energyLevel");
+    if (energyLevels) {
+        energyLevels.style.width = `${message.energyLevels}%`;
+    }
 };
 const initFasterVideosSwitch = () => {
     // Sends an event to background.js to enable/disable faster videos
@@ -89,7 +103,6 @@ const initFasterVideosSwitch = () => {
         let fasterVideosEnabled = e.target.checked;
         let playbackSpeedMultiplierDropdown = document.getElementById("playbackSpeedMultiplierDropdown");
         let playbackSpeedMultiplier = document.getElementById("playbackSpeedMultiplier");
-        console.log(playbackSpeedMultiplier);
         chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
             let id = tabs[0].id;
             if (fasterVideosEnabled) {
@@ -98,8 +111,6 @@ const initFasterVideosSwitch = () => {
                 // Update the speed to the dropdown option and save original speed
                 let playbackSpeed = parseFloat(playbackSpeedMultiplier.value);
                 chrome.tabs.sendMessage(id, { type: "saveOriginalSpeed" });
-                console.log(playbackSpeedMultiplier.value);
-                console.log(playbackSpeed);
                 await setSpeed(playbackSpeed);
             }
             else {
@@ -111,17 +122,15 @@ const initFasterVideosSwitch = () => {
         });
     });
 };
-// Send an event to background.js to set the custom speed
 const initFasterVideos = () => {
+    // Send an event to background.js to set the custom speed
     document
         .getElementById("playbackSpeedMultiplier")
         ?.addEventListener("change", async (e) => {
         let playbackSpeed = parseFloat(e.target.value);
-        console.log("Playbackspeed", playbackSpeed);
         await setSpeed(playbackSpeed);
     });
 };
-// Function to set playback speed
 const setSpeed = async (playbackSpeed) => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         let id = tabs[0].id;
@@ -132,3 +141,19 @@ const setSpeed = async (playbackSpeed) => {
     });
     await chrome.storage.local.set({ playbackSpeed: playbackSpeed });
 };
+chrome.tabs.onReplaced.addListener((addedTabId, removedTabId) => {
+    console.log("REplaced");
+    port = chrome.runtime.connect();
+});
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    console.log("updated");
+    port = chrome.runtime.connect();
+});
+chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
+    console.log("Removed");
+    port = chrome.runtime.connect();
+});
+chrome.tabs.onActivated.addListener((activeInfo) => {
+    console.log("Activated");
+    port = chrome.runtime.connect();
+});
