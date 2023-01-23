@@ -16,9 +16,6 @@
     {
       "matches": [
         "https://www.youtube.com/*",
-        "https://learn.microsoft.com/*",
-        "https://online.manchester.ac.uk/*",
-        "https://video.manchester.ac.uk/*",
         "https://cdn.jsdelivr.net/npm/*"
       ],
       "js": ["dist/content.js"]

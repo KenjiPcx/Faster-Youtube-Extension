@@ -1,10 +1,4 @@
-let allowed = [
-  "https://www.youtube.com/",
-  "https://learn.microsoft.com/",
-  "https://online.manchester.ac.uk/",
-  "https://video.manchester.ac.uk/",
-  "https://cdn.jsdelivr.net/npm/",
-];
+let allowed = ["https://www.youtube.com/"];
 
 // Whenever the popup is loaded
 document.addEventListener("DOMContentLoaded", () => {
@@ -22,9 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    console.log("MARCHED", matched);
     chrome.storage.local.get(["hasVideos"], (result) => {
-      console.log("hasVideos", result.hasVideos);
       if (!result.hasVideos || !matched) {
         // Disable when no vids were found
         fasterVideosSwitch?.setAttribute("disabled", "");
