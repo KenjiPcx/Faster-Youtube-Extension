@@ -7,6 +7,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let playbackSpeedMultiplierCard = document.getElementById(
     "playbackSpeedMultiplierCard"
   );
+  let playbackSpeedMultiplier = document.getElementById(
+    "playbackSpeedMultiplier"
+  ) as HTMLSelectElement;
 
   let matched = false;
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -29,6 +32,11 @@ document.addEventListener("DOMContentLoaded", () => {
         let fasterVideos = result.fasterVideos || false;
         if (fasterVideos) {
           fasterVideosSwitch?.setAttribute("checked", "");
+          chrome.storage.local.get(["playbackSpeed"], async (result) => {
+            let playbackSpeed = result.playbackSpeed || "2";
+            playbackSpeedMultiplier.value = playbackSpeed;
+            await setSpeed(playbackSpeed);
+          });
         } else {
           playbackSpeedMultiplierCard!.style.display = "none";
         }
