@@ -1,1 +1,0 @@
-alert("Stop watching youtube!");
